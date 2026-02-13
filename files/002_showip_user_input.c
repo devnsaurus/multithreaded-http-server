@@ -1,54 +1,60 @@
-/*
-** showip.c
-**
-** show IP addresses for a host given on the command line
-** --> 
-*/
-// Source - https://stackoverflow.com/a/48332467
-// Posted by Pablo, modified by community. See post 'Timeline' for change history
-// Retrieved 2026-02-04, License - CC BY-SA 4.0
+// applying logic of 001_showip.c 
+// the program will prompt user to enter a website
+// then return its IP
 
-
-/*
-$ ./001_show_ip google.com
-
-IP addresses for google.com:
-
-  IPv4: 142.250.207.238
-  IPv6: 2404:6800:4009:826::200e
-*/
 #define _POSIX_C_SOURCE 200809L
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <netdb.h>
+#include <netdb.h>  
 #include <arpa/inet.h>
 #include <netinet/in.h>
+char* string_input(){
+    char* website;
+    char tempBuffer[1024]={};
+    //printf("\nbefore entering name\nsizeof(tempBuffer)= %ld",sizeof(tempBuffer));
+    //printf("\nstrlen(tempBuffer) = %ld",strlen(tempBuffer));
 
-int main(int argc, char *argv[])
-{
+
+    printf("\nEnter website : ");
+    
+
+
+    if (fgets(tempBuffer,sizeof(tempBuffer),stdin) !=NULL)
+    {
+        website = (char*)malloc(strlen(tempBuffer)+1);
+        //printf("\n after entering name:");
+        //printf("\nsizeof(tempBuffer)= %ld",sizeof(tempBuffer));
+        //printf("\nstrlen(tempBuffer) = %ld",strlen(tempBuffer));
+        
+        strcpy(website,tempBuffer);
+        website[strlen(tempBuffer)-1]='\0';
+        return website;
+    }
+}
+
+
+int main(){
+    char *site=string_input();
+    printf("\n The website you entered: %s\n",site);
+    
     struct addrinfo hints, *res, *p;
     int status;
     char ipstr[INET6_ADDRSTRLEN];
-
-    if (argc != 2) {
-        fprintf(stderr,"usage: showip hostname\n");
-        return 1;
-    }
 
     memset(&hints, 0, sizeof hints);
     hints.ai_family = AF_UNSPEC;  // Either IPv4 or IPv6
     hints.ai_socktype = SOCK_STREAM; //SOCK_DGRAM if you wanna use datagram instead of tcp
 
-
-    if ((status = getaddrinfo(argv[1], NULL, &hints, &res)) != 0) {
+    if ((status = getaddrinfo(site, NULL, &hints, &res)) != 0) {
         fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(status));
         return 2;
     }
 
-    printf("IP addresses for %s:\n\n", argv[1]);
+    printf("IP addresses for %s:\n\n", site);
 
     for(p = res;p != NULL; p = p->ai_next) {
         void *addr;
@@ -72,8 +78,10 @@ int main(int argc, char *argv[])
         inet_ntop(p->ai_family, addr, ipstr, sizeof ipstr);
         printf("  %s: %s\n", ipver, ipstr);
     }
-
     freeaddrinfo(res); // free the linked list
 
-    return 0;
+
+    free(site);
+
+
 }
